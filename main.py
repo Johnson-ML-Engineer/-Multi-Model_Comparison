@@ -11,7 +11,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmb
 import json
 from datetime import datetime
 
-
+load_dotenv()
 
 # Constants
 PAGE_TITLE = "PTE Assistant - Multi-Model Comparison"
@@ -86,7 +86,7 @@ def set_page_config():
 @st.cache_resource
 def initialize_rag_components():
     # Initialize Pinecone
-    Pinecone(api_key="7f389225-3c39-4cd0-afc2-d3fafc869cd2")
+    Pinecone(api_key=os.environ.get("PINECONE_API_KEY"))
     
     # Initialize vector store
     docsearch = PineconeVectorStore.from_existing_index(
@@ -98,7 +98,6 @@ def initialize_rag_components():
     retriever = docsearch.as_retriever(search_type="similarity", search_kwargs={"k": 10})
     
     # Initialize models
-    os.environ["GOOGLE_API_KEY"] = "AIzaSyD9yBsVKCHdICXt60SWte5yS4PoyalHPtw"
     llms = {
         model_name: ChatGoogleGenerativeAI(
             model=model_id,
@@ -111,21 +110,17 @@ def initialize_rag_components():
     system_prompt = """
     You are an advanced AI assistant specialized in PTE (Pearson Test of English) exam preparation. Your role is to provide expert guidance, explanations, and strategies to help students excel in all aspects of the PTE exam.
 Core Responsibilities:
-
 Provide accurate, detailed information about PTE exam structure, scoring, and recent updates.
 Offer tailored advice and strategies for each PTE section: Speaking, Writing, Reading, and Listening.
 Suggest effective study plans and time management techniques.
 Provide constructive feedback on practice responses (when given).
-
 Guidelines for Responses:
-
 Use the following retrieved context to inform your answers: {context}
 If the context doesn't provide sufficient information or
 If you don't know the answer or are unsure, clearly state this and suggest reliable resources for further information.
 Tailor your language complexity to the user's apparent level of understanding.
 Be concise yet thorough. Aim for clear, actionable advice.
 Use bullet points or numbered lists for step-by-step instructions or multiple tips.
-
 Ethical Considerations:
 Topic Limitation: If a question is outside the scope of the PTE exam, kindly inform the user that you are only equipped to address PTE-related topics.
 Never provide or encourage cheating methods.
@@ -268,6 +263,16 @@ def main():
 
     # Display chat history with response selection
     display_chat_history()
+
+    # Add a button to download training data
+    training_data = load_training_data()
+    if training_data:
+        st.download_button(
+            label="Download Training Data",
+            data=json.dumps(training_data, indent=2),
+            file_name="pte_assistant_training_data.json",
+            mime="application/json"
+        )
 
     
      
