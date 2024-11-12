@@ -90,7 +90,7 @@ def initialize_rag_components():
     
     # Initialize vector store
     docsearch = PineconeVectorStore.from_existing_index(
-    index_name = "dataset2",
+    index_name = "dataset3",
     embedding = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
 )
     
